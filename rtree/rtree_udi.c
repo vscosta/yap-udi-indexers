@@ -7,8 +7,10 @@
 
 #include "rtree.h"
 #include "clause_list.h"
-#include "rtree_udi.h"
 #include "udi.h"
+#include "rtree_udi.h"
+
+#define SPEC "rtree"
 
 void udi_rtree_init(void) {
 	UdiControlBlock cb;
@@ -18,8 +20,8 @@ void udi_rtree_init(void) {
 	}
 	memset((void *) cb,0, sizeof(*cb));
 
-	cb->decl=Yap_LookupAtom("rtree");
-	fprintf(stderr,"decl:%p\n",cb->decl);
+	cb->decl=Yap_LookupAtom(SPEC);
+	//fprintf(stderr,"decl:%p\n",cb->decl);
 
 	cb->init=RtreeUdiInit;
 	cb->insert=RtreeUdiInsert;
@@ -49,7 +51,7 @@ static int YAP_IsNumberTermToFloat (YAP_Term term, YAP_Float *n)
 static rect_t RectOfTerm (YAP_Term term)
 {
   YAP_Term tmp;
-  double coordinates[4];
+  rect_t rect;
   int i;
   
   if (!YAP_IsPairTerm(term))
@@ -58,12 +60,12 @@ static rect_t RectOfTerm (YAP_Term term)
   for (i = 0; YAP_IsPairTerm(term) && i < 4; i++)
     {
       tmp = YAP_HeadOfTerm (term);
-      if (!YAP_IsNumberTermToFloat(tmp,&(coordinates[i])))
+      if (!YAP_IsNumberTermToFloat(tmp,&(rect.coords[i])))
         return (RectInit());
       term = YAP_TailOfTerm (term);
     }
 
-  return (RectInitCoords(coordinates));
+  return (rect);
 }
 
 control_t *RtreeUdiInit (YAP_Term spec,
@@ -87,7 +89,7 @@ control_t *RtreeUdiInit (YAP_Term spec,
     {
       arg = YAP_ArgOfTerm(i,spec);
       if (YAP_IsAtomTerm(arg)
-          && strcmp("+",YAP_AtomName(YAP_AtomOfTerm(arg))) == 0)
+          && strcmp(SPEC,YAP_AtomName(YAP_AtomOfTerm(arg))) == 0)
         {
           
           (*control)[c].pred = pred;
@@ -113,9 +115,13 @@ control_t *RtreeUdiInsert (YAP_Term term,control_t *control,void *clausule)
   for (i = 0; i < NARGS && (*control)[i].arg != 0 ; i++)
     {
       r = RectOfTerm(YAP_ArgOfTerm((*control)[i].arg,term));
-      if (!(*control)[i].tree)
+      if (!(*control)[i].tree){
         (*control)[i].tree = RTreeNew();
+        //RTreePrint((*control)[i].tree);
+      }
       RTreeInsert(&(*control)[i].tree,r,clausule);
+      //RectPrint(r);printf("\n");
+      //RTreePrint((*control)[i].tree);
     }
 
   /*  printf("insert %p\n", clausule); */
@@ -123,15 +129,15 @@ control_t *RtreeUdiInsert (YAP_Term term,control_t *control,void *clausule)
   return (control);
 }
 
-static int callback(rect_t r, void *data, void *arg)
-{
-  callback_m_t x;
-  x = (callback_m_t) arg;
-  return Yap_ClauseListExtend(x->cl,data,x->pred);
-}
+//static int callback(rect_t r, void *data, void *arg)
+//{
+//  callback_m_t x;
+//  x = (callback_m_t) arg;
+//  return Yap_ClauseListExtend(x->cl,data,x->pred);
+//}
 
 /*ARGS ARE AVAILABLE*/
-void *RtreeUdiSearch (control_t *control)
+int RtreeUdiSearch (control_t *control, Yap_UdiCallback callback, void *args)
 {
   rect_t r;
   int i;
@@ -141,39 +147,20 @@ void *RtreeUdiSearch (control_t *control)
   YAP_Term Constraints;
 
   /*RTreePrint ((*control)[0].tree);*/
-
   for (i = 0; i < NARGS && (*control)[i].arg != 0 ; i++) {
     YAP_Term t = YAP_A((*control)[i].arg);
     if (YAP_IsAttVar(t))
       {
         /*get the constraits rect*/
         Constraints = YAP_AttsOfVar(t);
-        /*        Yap_DebugPlWrite(Constraints); */
-        r = RectOfTerm(YAP_ArgOfTerm(2,Constraints));
+//        Yap_DebugPlWrite(Constraints);
+        if (YAP_IsApplTerm(Constraints))
+        	r = RectOfTerm(YAP_ArgOfTerm(2,Constraints));
 
-        c = &cm;
-        c->cl = Yap_ClauseListInit(&clauselist);
-        c->pred = (*control)[i].pred;
-        if (!c->cl)
-          return NULL; /*? or fail*/
-        RTreeSearch((*control)[i].tree, r, callback, c);
-        Yap_ClauseListClose(c->cl);
-
-        if (Yap_ClauseListCount(c->cl) == 0)
-          {
-            Yap_ClauseListDestroy(c->cl);
-            return Yap_FAILCODE();
-          }
-
-        if (Yap_ClauseListCount(c->cl) == 1)
-          {
-            return Yap_ClauseListToClause(c->cl);
-          }
-
-        return Yap_ClauseListCode(c->cl);
+        return RTreeSearch((*control)[i].tree, r, callback, args);
       }
   }
-  return NULL; /*YAP FALLBACK*/
+  return -1; /*YAP FALLBACK*/
 }
 
 int RtreeUdiDestroy(control_t *control)

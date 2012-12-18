@@ -84,7 +84,6 @@ static rect_t RTreeNodeCover(node_t);
 static double RectArea (rect_t);
 static rect_t RectCombine (rect_t, rect_t);
 static int RectOverlap (rect_t, rect_t);
-static void RectPrint (rect_t);
 
 static partition_t PartitionNew (void);
 static void PartitionPush (partition_t, branch_t);

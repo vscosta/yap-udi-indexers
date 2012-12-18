@@ -30,7 +30,10 @@ extern control_t *RtreeUdiInsert (YAP_Term term, /*asserted term*/
                                   void *clausule); /*to store in tree and return
                                                      in search*/
 
-extern void *RtreeUdiSearch (control_t *control);
+extern int RtreeUdiSearch (control_t *control,
+							 Yap_UdiCallback callback,
+							 void *args);
+
 extern int RtreeUdiDestroy(control_t *control);
 
 #endif /* _RTREE_UDI_ */

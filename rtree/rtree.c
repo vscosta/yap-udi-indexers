@@ -55,7 +55,7 @@ static void RTreeDestroyNode (node_t node)
 
 static void RTreeNodeInit (node_t n)
 {
-  memset((void *) n,0, sizeof(*n));
+  memset((void *) n,0, SIZEOF_NODE(MAXCARD));
   n->level = -1;
 }
 
@@ -85,7 +85,7 @@ static int RTreeSearchNode (node_t n, rect_t s, SearchHitCallback f, void *arg)
           {
             c ++;
             if (f)
-              if ( !f(n->branch[i].mbr,n->branch[i].child,arg))
+              if ( !f(&(n->branch[i].mbr),n->branch[i].child,arg))
                 return c;
           }
     }
@@ -391,7 +391,7 @@ static partition_t PartitionNew (void)
 
   p = (partition_t) malloc(SIZEOF_PARTITION(MAXCARD));
   /*TODO: check return value*/
-  memset((void *) &p,0, SIZEOF_PARTITION(MAXCARD));
+  memset((void *) p,0, SIZEOF_PARTITION(MAXCARD));
   p->cover[0] = p->cover[1] = p->cover_all = RectInit();
   return p;
 }
@@ -432,7 +432,11 @@ rect_t RectInit (void)
 
 rect_t RectInitCoords (double c[4])
 {
-  rect_t r = {{c[0], c[1], c[2], c[3]}};
+  rect_t r;
+  r.coords[0] = c[0];
+  r.coords[1] = c[1];
+  r.coords[2] = c[2];
+  r.coords[3] = c[3];
   return (r);
 }
 
@@ -491,7 +495,7 @@ static rect_t RTreeNodeCover(node_t n)
   return r;
 }
 
-static void RectPrint (rect_t r)
+void RectPrint (rect_t r)
 {
   int i;
 
