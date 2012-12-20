@@ -3,26 +3,22 @@
 
 #include <YapInterface.h>
 #include <udi.h>
-#include "utarray.h"
 #include "rtree.h"
 
 #define SPEC "rtree"
 /*Prolog term from :- udi(a(-,rtree,-)).*/
 
-typedef struct Control
-{
-  int arg;
-  rtree_t tree;
-} control_t;
+extern void *RtreeUdiInit
+	(YAP_Term spec, int arg, int arity);
 
-UT_icd rtree_cb_icd = {sizeof(control_t), NULL, NULL, NULL};
+extern void *RtreeUdiInsert
+	(void *control, YAP_Term term, int arg, void *data);
 
-extern void *RtreeUdiInit (YAP_Term spec, int arity);
-
-extern void *RtreeUdiInsert (YAP_Term term, void *control, void *clausule);
-
-extern int RtreeUdiSearch (void *control, Yap_UdiCallback callback, void *args);
+extern int RtreeUdiSearch
+	(void *control, int arg, Yap_UdiCallback callback, void *args);
 
 extern int RtreeUdiDestroy(void *control);
+
+void udi_rtree_init(void);
 
 #endif /* _RTREE_UDI_ */
