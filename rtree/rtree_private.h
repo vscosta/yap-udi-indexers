@@ -6,6 +6,11 @@
 #define NUMDIMS 2 /* we will work in 2d changing this will
                      break some functions */
 
+// Do not kown where it is defined but I need it
+extern int Yap_page_size;
+#define MAXCARD (int)((Yap_page_size-(2*sizeof(int)))/ sizeof(struct Branch))
+#define MINCARD (MAXCARD / 2)
+
 struct Rect
 {
   double coords[2*NUMDIMS]; /* x1min, y1min, ... , x1max, y1max, ...*/
@@ -29,36 +34,19 @@ struct Node
   branch_t branch[FLEXIBLE_SIZE];
 };
 typedef struct Node * node_t;
-#define SIZEOF_NODE(maxcard) SIZEOF_FLEXIBLE(struct Node, branch, maxcard)
+#define SIZEOF_NODE SIZEOF_FLEXIBLE(struct Node, branch, MAXCARD)
 
 typedef node_t rtree_t;
-
-//struct RTreeInfo
-//{
-//  /* info on the tree structure */
-//  size_t maxcard;
-//  size_t mincard;
-//
-//  /* root node index */
-//  void * nidx;
-//};
-//typedef struct RTreeInfo * rtreeinfo_t;
-
-#define PGSIZE 196
-#define MAXCARD (int)((PGSIZE-(2*sizeof(int)))/ sizeof(struct Branch))
-#define MINCARD (MAXCARD / 2)
 
 struct Partition
 {
   int n;
   rect_t cover_all;
   rect_t cover[2];
-  size_t maxcard;
   branch_t buffer[FLEXIBLE_SIZE];
 };
 typedef struct Partition * partition_t;
-#define SIZEOF_PARTITION(maxcard) \
-  SIZEOF_FLEXIBLE(struct Partition, buffer, maxcard + 1)
+#define SIZEOF_PARTITION SIZEOF_FLEXIBLE(struct Partition, buffer, MAXCARD + 1)
 
 /* #define ALIGN(addr, size) (((addr)+(size-1))&(~(size-1))) */
 

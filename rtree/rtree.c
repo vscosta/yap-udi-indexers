@@ -24,7 +24,7 @@ static node_t RTreeNewNode (void)
 {
   node_t n;
 
-  n = (node_t) malloc (SIZEOF_NODE(MAXCARD));
+  n = (node_t) malloc (SIZEOF_NODE);
   assert(n);
   RTreeNodeInit(n);
   return n;
@@ -55,7 +55,7 @@ static void RTreeDestroyNode (node_t node)
 
 static void RTreeNodeInit (node_t n)
 {
-  memset((void *) n,0, SIZEOF_NODE(MAXCARD));
+  memset((void *) n,0, SIZEOF_NODE);
   n->level = -1;
 }
 
@@ -389,9 +389,9 @@ static partition_t PartitionNew (void)
 {
   partition_t p;
 
-  p = (partition_t) malloc(SIZEOF_PARTITION(MAXCARD));
+  p = (partition_t) malloc(SIZEOF_PARTITION);
   /*TODO: check return value*/
-  memset((void *) p,0, SIZEOF_PARTITION(MAXCARD));
+  memset((void *) p,0, SIZEOF_PARTITION);
   p->cover[0] = p->cover[1] = p->cover_all = RectInit();
   return p;
 }
