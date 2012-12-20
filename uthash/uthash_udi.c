@@ -1,4 +1,4 @@
-#include <stdlib.h>
+#include <stdio.h>
 #include <assert.h>
 
 #include "uthash_udi.h"
@@ -6,7 +6,7 @@
 
 static struct udi_control_block UTHashCB;
 
-void udi_rtree_init(void) {
+void udi_uthash_init(void) {
 	UdiControlBlock cb = &UTHashCB;
 
 	memset((void *) cb,0, sizeof(*cb));
@@ -63,8 +63,8 @@ int UTHashUdiSearch (void *control,
 
   if (YAP_IsAtomTerm(argterm))
     {
-      atom = YAP_AtomOfTerm(arg);
-
+      atom = YAP_AtomOfTerm(argterm);
+//      fprintf(stderr,"Atom %p\n", atom);
 
       HASH_FIND_ATOM(hash,&atom,element);
       /* HASH_FIND(hh,utcontrol->tree,&atom,sizeof(Atom),element); */
@@ -74,8 +74,10 @@ int UTHashUdiSearch (void *control,
           count ++;
           HASH_FIND_NEXT_ATOM(element,&atom);
         }
+//      fprintf(stderr,"found %d\n",count);
       return (count);
     }
+//  fprintf(stderr,"not found\n");
   return -1; /*YAP FALLBACK*/
 }
 
