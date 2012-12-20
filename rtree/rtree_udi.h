@@ -1,6 +1,8 @@
 #ifndef _RTREE_UDI_
 #define _RTREE_UDI_
 
+#include "udi.h"
+
 #define NARGS 5
 struct Control
 {
@@ -10,30 +12,16 @@ struct Control
 };
 typedef struct Control control_t[NARGS];
 
-struct CallbackM
-{
-  clause_list_t cl;
-  void * pred;
-};
-typedef struct CallbackM * callback_m_t;
-
-/*Prolog term from :- udi(a(-,+,+)).
+/*Prolog term from :- udi(a(-,rtree,-)).
   User defined index announce
 */
-extern control_t *RtreeUdiInit (YAP_Term spec,
-                                void *pred,
-                                int arity);
+extern void *RtreeUdiInit (YAP_Term spec, void *pred, int arity);
 
 /*this is called in each asserted term that was declared to udi_init*/
-extern control_t *RtreeUdiInsert (YAP_Term term, /*asserted term*/
-                                  control_t *control,
-                                  void *clausule); /*to store in tree and return
-                                                     in search*/
+extern void *RtreeUdiInsert (YAP_Term term,void *control, void *clausule);
 
-extern int RtreeUdiSearch (control_t *control,
-							 Yap_UdiCallback callback,
-							 void *args);
+extern int RtreeUdiSearch (void *control,Yap_UdiCallback callback,void *args);
 
-extern int RtreeUdiDestroy(control_t *control);
+extern int RtreeUdiDestroy(void *control);
 
 #endif /* _RTREE_UDI_ */
