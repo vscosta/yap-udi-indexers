@@ -1,26 +1,27 @@
 #ifndef _RTREE_UDI_
 #define _RTREE_UDI_
 
-#include "udi.h"
+#include <YapInterface.h>
+#include <udi.h>
+#include "utarray.h"
+#include "rtree.h"
 
-#define NARGS 5
-struct Control
+#define SPEC "rtree"
+/*Prolog term from :- udi(a(-,rtree,-)).*/
+
+typedef struct Control
 {
   int arg;
-  void *pred;
   rtree_t tree;
-};
-typedef struct Control control_t[NARGS];
+} control_t;
 
-/*Prolog term from :- udi(a(-,rtree,-)).
-  User defined index announce
-*/
-extern void *RtreeUdiInit (YAP_Term spec, void *pred, int arity);
+UT_icd rtree_cb_icd = {sizeof(control_t), NULL, NULL, NULL};
 
-/*this is called in each asserted term that was declared to udi_init*/
-extern void *RtreeUdiInsert (YAP_Term term,void *control, void *clausule);
+extern void *RtreeUdiInit (YAP_Term spec, int arity);
 
-extern int RtreeUdiSearch (void *control,Yap_UdiCallback callback,void *args);
+extern void *RtreeUdiInsert (YAP_Term term, void *control, void *clausule);
+
+extern int RtreeUdiSearch (void *control, Yap_UdiCallback callback, void *args);
 
 extern int RtreeUdiDestroy(void *control);
 
