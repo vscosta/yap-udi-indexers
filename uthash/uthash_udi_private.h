@@ -5,9 +5,14 @@
 
 typedef size_t index_t;
 
+union AI {
+  YAP_Atom atom;
+  YAP_Int integer;
+};
+
 struct UTHash
 {
-  YAP_Atom atom;
+  union AI key;
   void *data;
   UT_hash_handle hh;
 };
@@ -34,11 +39,11 @@ typedef struct UTHash *uthash_t;
   } while (0)                                                           \
 
 /* to ease code for a Atom hash table*/
-#define HASH_FIND_ATOM(head,findatom,out)               \
-  HASH_FIND(hh,head,findatom,sizeof(YAP_Atom),out)
-#define HASH_ADD_ATOM(head,add)                 \
-  HASH_ADD(hh,head,atom,sizeof(YAP_Atom),add)
-#define HASH_FIND_NEXT_ATOM(last,findint)       \
-  HASH_FIND_NEXT(hh,last,findint,sizeof(YAP_Atom))
+#define HASH_FIND_AI(head,find,out)               \
+  HASH_FIND(hh,head,find,sizeof(union AI),out)
+#define HASH_ADD_AI(head,add)                 \
+  HASH_ADD(hh,head,key,sizeof(union AI),add)
+#define HASH_FIND_NEXT_AI(last,find)       \
+  HASH_FIND_NEXT(hh,last,find,sizeof(union AI))
 
 #endif /* _UTHASH_UDI_PRIVATE_ */

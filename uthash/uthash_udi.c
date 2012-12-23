@@ -35,15 +35,20 @@ void *UTHashUdiInsert (void *control,
 
   argterm = ArgOfTerm(arg,term);
 
-  if (YAP_IsAtomTerm(arg))
+  if (YAP_IsAtomTerm(argterm) || YAP_IsIntTerm(argterm))
     {
       element = (uthash_t) malloc(sizeof(*element));
-      element->atom = YAP_AtomOfTerm(argterm);
       element->data = data;
-      HASH_ADD_ATOM(hash, element);
-      /* HASH_ADD(hh,hashtable,atom,sizeof(Atom),element); */
+      if (YAP_IsAtomTerm(argterm))
+        element->key.atom = YAP_AtomOfTerm(argterm);
+      else
+        element->key.integer = YAP_IntOfTerm(argterm);
+
+      HASH_ADD_AI(hash, element);
+      /* HASH_ADD(hh,hashtable,key,sizeof(union AI),element); */
     }
 
+  /*TODO: check how to handle if a different value appears*/
   return (void *) hash;
 }
 
@@ -56,23 +61,32 @@ int UTHashUdiSearch (void *control,
   uthash_t element;
   uthash_t hash = (uthash_t) control;
   int count = 0;
+  union AI ai;
 
   assert(hash);
 
   argterm = YAP_A(arg); /*Deref(XREGS[arg]); */
 
-  if (YAP_IsAtomTerm(argterm))
+  if (YAP_IsAtomTerm(argterm) || YAP_IsIntTerm(argterm))
     {
-      atom = YAP_AtomOfTerm(argterm);
-//      fprintf(stderr,"Atom %p\n", atom);
+      if (YAP_IsAtomTerm(argterm))
+        {
+          ai.atom = YAP_AtomOfTerm(argterm);
+          //fprintf(stderr,"Atom %p\n", atom);
+        }
+      else
+        ai.integer = YAP_IntOfTerm(argterm);
 
-      HASH_FIND_ATOM(hash,&atom,element);
+      HASH_FIND_AI(hash,&ai,element);
       /* HASH_FIND(hh,utcontrol->tree,&atom,sizeof(Atom),element); */
       while (element)
         {
-          callback((void *) element->atom, element->data, args);
+          if (YAP_IsAtomTerm(argterm))
+            callback((void *) element->key.atom, element->data, args);
+          else
+            callback((void *) element->key.integer, element->data, args);
           count ++;
-          HASH_FIND_NEXT_ATOM(element,&atom);
+          HASH_FIND_NEXT_AI(element,&ai);
         }
 //      fprintf(stderr,"found %d\n",count);
       return (count);
