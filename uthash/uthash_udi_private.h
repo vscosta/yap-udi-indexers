@@ -3,8 +3,6 @@
 
 #include "uthash.h"
 
-typedef size_t index_t;
-
 union AI {
   YAP_Atom atom;
   YAP_Int integer;

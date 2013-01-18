@@ -13,8 +13,7 @@ void udi_btree_init(void) {
 
 	memset((void *) cb,0, sizeof(*cb));
 
-	/*TODO: ask vitor why this gives a warning*/
-	cb->decl=Yap_LookupAtom(SPEC);
+	cb->decl=YAP_LookupAtom(SPEC);
 
 	cb->init=BtreeUdiInit;
 	cb->insert=BtreeUdiInsert;

@@ -11,8 +11,7 @@ void udi_uthash_init(void) {
 
 	memset((void *) cb,0, sizeof(*cb));
 
-	/*TODO: ask vitor why this gives a warning*/
-	cb->decl=Yap_LookupAtom(SPEC);
+	cb->decl=YAP_LookupAtom(SPEC);
 
 	cb->init=UTHashUdiInit;
 	cb->insert=UTHashUdiInsert;
@@ -33,7 +32,8 @@ void *UTHashUdiInsert (void *control,
   YAP_Term argterm;
   uthash_t element;
 
-  argterm = ArgOfTerm(arg,term);
+//  Yap_DebugPlWrite(term); fprintf(stderr, "\n");
+  argterm = YAP_ArgOfTerm(arg,term);
 
   if (YAP_IsAtomTerm(argterm) || YAP_IsIntTerm(argterm))
     {
@@ -45,7 +45,6 @@ void *UTHashUdiInsert (void *control,
         element->key.integer = YAP_IntOfTerm(argterm);
 
       HASH_ADD_AI(hash, element);
-      /* HASH_ADD(hh,hashtable,key,sizeof(union AI),element); */
     }
 
   /*TODO: check how to handle if a different value appears*/
@@ -69,22 +68,16 @@ int UTHashUdiSearch (void *control,
 
   if (YAP_IsAtomTerm(argterm) || YAP_IsIntTerm(argterm))
     {
-      if (YAP_IsAtomTerm(argterm))
-        {
-          ai.atom = YAP_AtomOfTerm(argterm);
-          //fprintf(stderr,"Atom %p\n", atom);
-        }
-      else
-        ai.integer = YAP_IntOfTerm(argterm);
+	  if (YAP_IsAtomTerm(argterm))
+		  ai.atom = YAP_AtomOfTerm(argterm);
+	  else
+		  ai.integer = YAP_IntOfTerm(argterm);
 
       HASH_FIND_AI(hash,&ai,element);
       /* HASH_FIND(hh,utcontrol->tree,&atom,sizeof(Atom),element); */
       while (element)
         {
-          if (YAP_IsAtomTerm(argterm))
-            callback((void *) element->key.atom, element->data, args);
-          else
-            callback((void *) element->key.integer, element->data, args);
+    	  callback((void *) &(element->key), element->data, args);
           count ++;
           HASH_FIND_NEXT_AI(element,&ai);
         }
